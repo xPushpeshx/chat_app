@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+</head>
+<body>
+    <h1>GroupName:{{gpname}}</h1>
+    <textarea id='chat-log' clos='20' rows='20' style="width: 1503px; height: 300px;"></textarea><br>
+    <input type='text' id='chat-message-input' size='100'><br>
+    <input type='button' value='Send' id='chat-message-submit'>
+    {{gpname|json_script:'group-name'}}
+    <script>
+        const groupName = JSON.parse(document.getElementById('group-name').textContent)
+        var ws=new WebSocket('ws://'+ window.location.host +"/ws/asc/"+ groupName + '/')
+        ws.onopen=function(){
+            console.log('Websocket open...')
+        }
+        ws.onmessage=function(event){
+            console.log('message recived from server...',event.data)
+            const data=JSON.parse(event.data)
+            document.querySelector('#chat-log').value +=(data.msg + '\n')
+
+        } 
+        ws.onclose=function(event){
+            console.error('websocket closed...')
+        }
+        document.getElementById('chat-message-submit').onclick=function(event){
+            const messageInputDom=document.getElementById('chat-message-input')
+            const message = messageInputDom.value
+            ws.send(JSON.stringify({
+                'msg': message
+            }))
+            messageInputDom.value=''
+        }
+
+    </script>
+
+
+</body>
+</html>
